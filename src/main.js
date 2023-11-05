@@ -54,131 +54,45 @@ function startLspClient(lspPath) {
         // Initialize the LSP connection
         const initializeParams = {
             processId: process.pid,
-            rootUri: '/mnt/c/Users/yogendra/code-aid',
-            capabilities: {},
+            rootUri: null,
+            capabilities: {
+                textDocument: {
+                    definition: {
+                        dynamicRegistration: false
+                    }
+                },
+            },
             workspaceFolders: null
         };
         // Start listening to the LSP server
         connection.listen();
         const initResult = yield connection.sendRequest(lsp.InitializeRequest.type, initializeParams);
         // Handle the capabilities provided by the server
-        // console.log(initResult.capabilities);
-        // open file
-        const openParams = {
-            textDocument: {
-                uri: '/mnt/c/Users/yogendra/code-aid/src/main/java/co/incubyte/codeaid/CodeAidApplication.java',
-                languageId: 'java',
-                version: 1,
-                text: `
-            package co.incubyte;
-
-import co.incubyte.diagram.DiagramGenerator;
-import co.incubyte.documentgenerator.MarkdownGenerator;
-import co.incubyte.embeddings.EmbeddingService;
-import co.incubyte.filesystem.FileServiceException;
-import io.micronaut.configuration.picocli.PicocliRunner;
-import io.micronaut.context.annotation.Value;
-import io.micronaut.logging.LogLevel;
-import io.micronaut.logging.LoggingSystem;
-import jakarta.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-
-@Command(name = "code-aid", description = "...", mixinStandardHelpOptions = true)
-public class CodeAidCommand implements Runnable {
-
-  private static final Logger logger = LoggerFactory.getLogger(CodeAidCommand.class);
-  @Option(names = { "-v", "--verbose" }, description = "...")
-  boolean verbose;
-  @Value("\${args.input}")
-  @Option(names = { "-i", "--input" }, description = "Input Directory")
-  String input;
-  @Value("\${args.output}")
-  @Option(names = { "-o", "--output" }, description = "Output Directory")
-  String output;
-  @Value("\${args.include}")
-  @Option(names = { "--include" }, description = "..")
-  String filter;
-  @Option(names = { "--estimate-cost", "-ec" }, description = "Estimate cost of query.")
-  boolean estimateCost;
-  @Option(names = { "-l",
-      "--log" }, defaultValue = "INFO", description = "Log level, available: TRACE, DEBUG, INFO, "
-          + "WARN, ERROR")
-  String logLevel;
-  @Inject
-  private MarkdownGenerator markdownGenerator;
-  @Inject
-  private LoggingSystem loggingSystem;
-  @Inject
-  private EmbeddingService embeddingService;
-  @Inject
-  private DiagramGenerator diagramGenerator;
-
-  public CodeAidCommand() {
-  }
-
-  public CodeAidCommand(boolean verbose, String input, String output,
-      MarkdownGenerator markdownGenerator, String filter, String logLevel,
-      LoggingSystem loggingSystem, EmbeddingService embeddingService,
-      final DiagramGenerator diagramGenerator) {
-    this.verbose = verbose;
-    this.input = input;
-    this.output = output;
-    this.markdownGenerator = markdownGenerator;
-    this.filter = filter;
-    this.logLevel = logLevel;
-    this.loggingSystem = loggingSystem;
-    this.embeddingService = embeddingService;
-    this.diagramGenerator = diagramGenerator;
-  }
-
-  public static void main(String[] args) {
-    PicocliRunner.run(CodeAidCommand.class, args);
-  }
-
-  public void run() {
-    loggingSystem.setLogLevel(Logger.ROOT_LOGGER_NAME, LogLevel.valueOf(logLevel));
-    if (verbose) {
-      logger.info("input: {}", input);
-      logger.info("output: {}", output);
-    }
-    if (estimateCost) {
-      double estimatedCost = markdownGenerator.aiMarkdownGenerator.estimateCost(input, filter);
-      logger.info("Estimated cost: {}", estimatedCost);
-      return;
-    }
-    markdownGenerator.generate(input, output, filter);
-    embeddingService.save(output, filter);
-    diagramGenerator.generateHierarchicalJson(output);
-  }
-
-  public void generate(String inputDir, String outputDir, String filter, int i) {
-    try {
-    } catch (FileServiceException e) {
-      logger.error(e.getMessage());
-    }
-  }
-}
-
-            `
-            }
-        };
-        yield connection.sendNotification(lsp.DidOpenTextDocumentNotification.type, openParams);
+        console.log(initResult.capabilities);
+        // const didOpenParams: lsp.DidOpenTextDocumentParams = {
+        //     textDocument: {
+        //         uri: '/home/yjaiswal/code-aid',
+        //         languageId: 'java', // The language id.
+        //         version: 1, // The version of the document (it will increase after each change, including undo/redo).
+        //         text: '' // The content of the document.
+        //     }
+        // };
+        // const opened = await connection.sendNotification(lsp.DidOpenTextDocumentNotification.type, didOpenParams);
+        // console.log('didOpenParams');
+        // console.log(opened);
         // send get definition request at 80:27 for file /mnt/c/Users/yogendra/code-aid/src/main/java/co/incubyte/codeaid/CodeAidApplication.java
         const definitionParams = {
             textDocument: {
-                uri: '/mnt/c/Users/yogendra/code-aid/src/main/java/co/incubyte/codeaid/CodeAidApplication.java'
+                uri: 'file:///home/yjaiswal/code-aid/src/main/java/co/incubyte/CodeAidCommand.java'
             },
             position: {
                 line: 80,
-                character: 27
+                character: 20
             }
         };
         const definitionResult = yield connection.sendRequest(lsp.DefinitionRequest.type, definitionParams);
         console.log('definitionResult');
-        console.log(definitionResult);
+        console.log(JSON.stringify(definitionResult));
         // Remember to listen for errors and close the connection properly
         connection.onError((e) => console.error(e));
         connection.onClose(() => console.log('Connection closed'));

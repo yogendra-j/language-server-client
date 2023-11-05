@@ -23,8 +23,14 @@ async function startLspClient(lspPath: string) {
     // Initialize the LSP connection
     const initializeParams: lsp.InitializeParams = {
         processId: process.pid,
-        rootUri: '/mnt/c/Users/yogendra/code-aid',
-        capabilities: {}, // fill in the client capabilities
+        rootUri: null,
+        capabilities: {
+            textDocument: {
+                definition: {
+                    dynamicRegistration: false
+                }
+            },
+        }, // fill in the client capabilities
         workspaceFolders: null
     };
     // Start listening to the LSP server
@@ -33,21 +39,34 @@ async function startLspClient(lspPath: string) {
     const initResult = await connection.sendRequest(lsp.InitializeRequest.type, initializeParams);
 
     // Handle the capabilities provided by the server
-    // console.log(initResult.capabilities);
+    console.log(initResult.capabilities);
+
+    // const didOpenParams: lsp.DidOpenTextDocumentParams = {
+    //     textDocument: {
+    //         uri: '/home/yjaiswal/code-aid',
+    //         languageId: 'java', // The language id.
+    //         version: 1, // The version of the document (it will increase after each change, including undo/redo).
+    //         text: '' // The content of the document.
+    //     }
+    // };
+    // const opened = await connection.sendNotification(lsp.DidOpenTextDocumentNotification.type, didOpenParams);
+
+    // console.log('didOpenParams');
+    // console.log(opened);
 
     // send get definition request at 80:27 for file /mnt/c/Users/yogendra/code-aid/src/main/java/co/incubyte/codeaid/CodeAidApplication.java
     const definitionParams: lsp.TextDocumentPositionParams = {
         textDocument: {
-            uri: '/mnt/c/Users/yogendra/code-aid/src/main/java/co/incubyte/codeaid/CodeAidApplication.java'
+            uri: 'file:///home/yjaiswal/code-aid/src/main/java/co/incubyte/CodeAidCommand.java'
         },
         position: {
             line: 80,
-            character: 27
+            character: 20
         }
     };
     const definitionResult = await connection.sendRequest(lsp.DefinitionRequest.type, definitionParams);
     console.log('definitionResult');
-    console.log(definitionResult);
+    console.log(JSON.stringify(definitionResult));
 
     // Remember to listen for errors and close the connection properly
     connection.onError((e) => console.error(e));
